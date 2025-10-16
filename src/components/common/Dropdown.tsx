@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet } from 'react-native';
-import { ChevronDown } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, Modal, FlatList, StyleSheet, Image } from 'react-native';
 
 interface DropdownOption {
   label: string;
@@ -28,11 +27,16 @@ export const Dropdown: React.FC<DropdownProps> = ({
       <TouchableOpacity
         style={styles.dropdownButton}
         onPress={() => setVisible(true)}
+        activeOpacity={0.7}
       >
         <Text style={styles.dropdownButtonText}>
           {selectedOption?.label || placeholder}
         </Text>
-        <ChevronDown size={20} color="#666" />
+        <Image 
+          source={require('../../assets/chevron-right.png')} 
+          style={styles.dropdownIcon}
+          resizeMode="contain"
+        />
       </TouchableOpacity>
 
       <Modal
@@ -44,6 +48,7 @@ export const Dropdown: React.FC<DropdownProps> = ({
         <TouchableOpacity
           style={styles.modalOverlay}
           onPress={() => setVisible(false)}
+          activeOpacity={1}
         >
           <View style={styles.modalContent}>
             <FlatList
@@ -51,15 +56,25 @@ export const Dropdown: React.FC<DropdownProps> = ({
               keyExtractor={(item) => item.value}
               renderItem={({ item }) => (
                 <TouchableOpacity
-                  style={styles.option}
+                  style={[
+                    styles.option,
+                    selectedValue === item.value && styles.selectedOption
+                  ]}
                   onPress={() => {
                     onSelect(item.value);
                     setVisible(false);
                   }}
+                  activeOpacity={0.7}
                 >
-                  <Text style={styles.optionText}>{item.label}</Text>
+                  <Text style={[
+                    styles.optionText,
+                    selectedValue === item.value && styles.selectedOptionText
+                  ]}>
+                    {item.label}
+                  </Text>
                 </TouchableOpacity>
               )}
+              showsVerticalScrollIndicator={false}
             />
           </View>
         </TouchableOpacity>
@@ -74,35 +89,59 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e9ecef',
     borderRadius: 8,
-    padding: 12,
-    backgroundColor: 'white',
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    height: 52,
   },
   dropdownButtonText: {
     fontSize: 16,
     color: '#333',
+    fontWeight: '500',
+    flex: 1,
+  },
+  dropdownIcon: {
+    width: 16,
+    height: 16,
+    tintColor: '#666',
   },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 20,
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 12,
+    padding: 8,
     maxHeight: 300,
-    width: '80%',
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   option: {
-    padding: 12,
+    padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#f0f0f0',
+  },
+  selectedOption: {
+    backgroundColor: '#007bff10',
   },
   optionText: {
     fontSize: 16,
     color: '#333',
+  },
+  selectedOptionText: {
+    color: '#007bff',
+    fontWeight: '600',
   },
 });

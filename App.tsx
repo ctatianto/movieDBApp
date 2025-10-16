@@ -2,7 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { Home, Bookmark } from 'lucide-react-native';
+import { Image, View, Text, StyleSheet } from 'react-native';
+import { Bookmark } from 'lucide-react-native';
 import { AppProvider } from './src/context/AppContext';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { DetailsScreen } from './src/screens/DetailsScreen';
@@ -69,22 +70,37 @@ const WatchlistStackNavigator = () => (
   </WatchlistStack.Navigator>
 );
 
+// Custom Tab Bar Icon Component
+const TabBarIcon = ({ source, focused, title }: { source: any, focused: boolean, title: string }) => {
+  return (
+    <View style={styles.tabBarItem}>
+      <Image 
+        source={source} 
+        style={[
+          styles.tabBarIcon,
+          { tintColor: focused ? '#90cea1' : '#c0c0c0' } // Light green for active, light gray for inactive
+        ]} 
+        resizeMode="contain"
+      />
+      <Text style={[
+        styles.tabBarLabel,
+        { color: focused ? '#90cea1' : '#c0c0c0' } // Light green for active, light gray for inactive
+      ]}>
+        {title}
+      </Text>
+    </View>
+  );
+};
+
 const TabNavigator = () => (
   <Tab.Navigator
     screenOptions={{
-      tabBarActiveTintColor: '#007bff',
-      tabBarInactiveTintColor: '#6c757d',
       tabBarStyle: {
-        backgroundColor: 'white',
-        borderTopWidth: 1,
-        borderTopColor: '#e9ecef',
+        backgroundColor: '#032541', // Dark blue background
+        borderTopWidth: 0, // Remove top border
         paddingBottom: 4,
         paddingTop: 4,
         height: 60,
-      },
-      tabBarLabelStyle: {
-        fontSize: 12,
-        fontWeight: '500',
       },
     }}
   >
@@ -93,7 +109,13 @@ const TabNavigator = () => (
       component={HomeStackNavigator}
       options={{
         title: 'Home',
-        tabBarIcon: ({ color, size }) => <Home size={size} color={color} />,
+        tabBarIcon: ({ focused }) => (
+          <TabBarIcon 
+            source={require('./src/assets/Home.png')}
+            focused={focused}
+            title=""
+          />
+        ),
         headerShown: false,
       }}
     />
@@ -102,7 +124,13 @@ const TabNavigator = () => (
       component={WatchlistStackNavigator}
       options={{
         title: 'Watchlist',
-        tabBarIcon: ({ color, size }) => <Bookmark size={size} color={color} />,
+        tabBarIcon: ({ focused }) => (
+          <TabBarIcon 
+            source={require('./src/assets/Watchlist.png')}
+            focused={focused}
+            title=""
+          />
+        ),
         headerShown: false,
       }}
     />
@@ -132,5 +160,24 @@ const App = () => {
     </AppProvider>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBarItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabBarIcon: {
+    width: 24,
+    height: 24,
+  },
+  tabBarLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  tabIconText: {
+    fontSize: 24,
+  },
+});
 
 export default App;

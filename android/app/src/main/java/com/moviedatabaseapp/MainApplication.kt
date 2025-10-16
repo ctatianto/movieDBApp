@@ -1,4 +1,4 @@
-package com.moviedatabaseapp
+package com.movieDBApp
 
 import android.app.Application
 import com.facebook.react.PackageList

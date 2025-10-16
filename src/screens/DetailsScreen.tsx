@@ -13,7 +13,7 @@ import {
   Alert,
 } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
-import { ArrowLeft, Bookmark, BookmarkCheck, Star, Clock, Calendar, Globe } from 'lucide-react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { MovieDetails, CastMember, Movie } from '../context/types';
 import { movieAPI } from '../services/api';
 import { useApp } from '../context/AppContext';
@@ -25,9 +25,9 @@ type DetailsScreenRouteProp = NativeStackScreenProps<HomeStackParamList | Watchl
 type DetailsScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList | WatchlistStackParamList>;
 
 export const DetailsScreen: React.FC = () => {
-    const route = useRoute<DetailsScreenRouteProp>();
-    const navigation = useNavigation<DetailsScreenNavigationProp>();
-    const { movieId } = route.params;
+  const route = useRoute<DetailsScreenRouteProp>();
+  const navigation = useNavigation<DetailsScreenNavigationProp>();
+  const { movieId } = route.params;
   
   const { state, dispatch } = useApp();
   const [movieDetails, setMovieDetails] = useState<MovieDetails | null>(null);
@@ -53,9 +53,11 @@ export const DetailsScreen: React.FC = () => {
       setLoading(false);
     }
   };
+
   const handleRecommendedMoviePress = (movieId: number) => {
     navigation.push('Details', { movieId });
   };
+
   const handleAddToWatchlist = () => {
     if (!movieDetails) return;
 
@@ -86,165 +88,156 @@ export const DetailsScreen: React.FC = () => {
   const getWriters = () => {
     return movieDetails?.credits?.crew.filter(person => 
       person.department === 'Writing'
-    ).slice(0, 3);
+    ).slice(0, 2);
   };
 
   const formatRuntime = (minutes: number) => {
+    if (!minutes) return 'N/A';
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return `${hours}h ${mins}m`;
   };
 
+  const formatReleaseDate = (dateString: string) => {
+    if (!dateString) return 'TBA';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-SG', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
   const renderHeader = () => {
     if (!movieDetails) return null;
-
-    const backdropUrl = movieDetails.backdrop_path 
-      ? `${API_CONFIG.IMAGE_BASE_URL}${movieDetails.backdrop_path}`
-      : 'https://via.placeholder.com/800x450/cccccc/666666?text=No+Image';
 
     const posterUrl = movieDetails.poster_path 
       ? `${API_CONFIG.IMAGE_BASE_URL}${movieDetails.poster_path}`
       : 'https://via.placeholder.com/300x450/cccccc/666666?text=No+Image';
 
-    return (
-      <View style={styles.header}>
-        {/* Backdrop Image */}
-        <Image source={{ uri: backdropUrl }} style={styles.backdrop} />
-        
-        {/* Back Button */}
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <ArrowLeft size={24} color="white" />
-        </TouchableOpacity>
-
-        {/* Poster and Basic Info */}
-        <View style={styles.posterSection}>
-          <Image source={{ uri: posterUrl }} style={styles.poster} />
-          
-          <View style={styles.basicInfo}>
-            <Text style={styles.title}>{movieDetails.title}</Text>
-            <Text style={styles.tagline}>{movieDetails.tagline}</Text>
-            
-            <View style={styles.ratingRow}>
-              <View style={styles.rating}>
-                <Star size={16} color="#ffc107" fill="#ffc107" />
-                <Text style={styles.ratingText}>
-                  {movieDetails.vote_average.toFixed(1)}
-                </Text>
-              </View>
-              <Text style={styles.year}>
-                {new Date(movieDetails.release_date).getFullYear()}
-              </Text>
-              <Text style={styles.certification}>
-                {movieDetails.adult ? 'R' : 'PG-13'}
-              </Text>
-            </View>
-
-            {/* Watchlist Button */}
-            <TouchableOpacity 
-              style={[
-                styles.watchlistButton,
-                isInWatchlist ? styles.watchlistButtonAdded : styles.watchlistButtonAdd
-              ]}
-              onPress={handleAddToWatchlist}
-            >
-              {isInWatchlist ? (
-                <BookmarkCheck size={20} color="white" />
-              ) : (
-                <Bookmark size={20} color="white" />
-              )}
-              <Text style={styles.watchlistButtonText}>
-                {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    );
-  };
-
-  const renderDetails = () => {
-    if (!movieDetails) return null;
-
     const director = getDirector();
     const writers = getWriters();
 
     return (
-      <View style={styles.detailsSection}>
-        {/* Key Facts */}
-        <View style={styles.keyFacts}>
-          <View style={styles.factItem}>
-            <Calendar size={16} color="#666" />
-            <Text style={styles.factText}>
-              {new Date(movieDetails.release_date).toLocaleDateString()}
-            </Text>
-          </View>
-          
-          <View style={styles.factItem}>
-            <Clock size={16} color="#666" />
-            <Text style={styles.factText}>
-              {formatRuntime(movieDetails.runtime)}
-            </Text>
-          </View>
-          
-          <View style={styles.factItem}>
-            <Globe size={16} color="#666" />
-            <Text style={styles.factText}>
-              {movieDetails.original_language.toUpperCase()}
-            </Text>
-          </View>
+      <View style={styles.header}>
+        {/* 1. Logo at top */}
+        <View style={styles.logoSection}>
+          <Image 
+            source={require('../assets/Logo.png')} 
+            style={styles.logo}
+            resizeMode="contain"
+          />
         </View>
 
-        {/* Genres */}
-        <View style={styles.genres}>
-          {movieDetails.genres.map(genre => (
-            <View key={genre.id} style={styles.genreTag}>
-              <Text style={styles.genreText}>{genre.name}</Text>
+        {/* 2. Back button + Movie title */}
+        <View style={styles.titleSection}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Icon name="arrow-left" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.title} numberOfLines={2}>
+            {movieDetails.title}
+          </Text>
+        </View>
+
+        {/* 3. Poster + Movie Details */}
+        <View style={styles.posterDetailsSection}>
+          <Image source={{ uri: posterUrl }} style={styles.poster} />
+          
+          <View style={styles.movieDetails}>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>PG</Text>
+              <Text style={styles.detailValue}>{movieDetails.adult ? '18+' : 'PG-13'}</Text>
             </View>
-          ))}
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Release Date</Text>
+              <Text style={styles.detailValue}>{formatReleaseDate(movieDetails.release_date)}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Duration</Text>
+              <Text style={styles.detailValue}>{formatRuntime(movieDetails.runtime)}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Genres</Text>
+              <Text style={styles.detailValue}>
+                {movieDetails.genres.map(genre => genre.name).join(', ')}
+              </Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Status</Text>
+              <Text style={styles.detailValue}>{movieDetails.status}</Text>
+            </View>
+            
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Original Language</Text>
+              <Text style={styles.detailValue}>{movieDetails.original_language.toUpperCase()}</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Overview */}
-        <View style={styles.section}>
+        {/* 4. User Score + Credits (side by side) */}
+        <View style={styles.scoreCreditsSection}>
+          <View style={styles.userScore}>
+            <View style={styles.scoreContainer}>
+              <Icon name="star" size={20} color="#ffc107" />
+              <Text style={styles.scoreValue}>{movieDetails.vote_average.toFixed(1)}</Text>
+            </View>
+            <Text style={styles.scoreLabel}>User Score</Text>
+          </View>
+          
+          <View style={styles.credits}>
+            {director && (
+              <View style={styles.creditItem}>
+                <Text style={styles.creditRole}>Director</Text>
+                <Text style={styles.creditName}>{director.name}</Text>
+              </View>
+            )}
+            {writers && writers.map((writer, index) => (
+              <View key={index} style={styles.creditItem}>
+                <Text style={styles.creditRole}>Writer</Text>
+                <Text style={styles.creditName}>{writer.name}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* 5. Tagline */}
+        {movieDetails.tagline ? (
+          <View style={styles.taglineSection}>
+            <Text style={styles.tagline}>"{movieDetails.tagline}"</Text>
+          </View>
+        ) : null}
+
+        {/* 6. Overview */}
+        <View style={styles.overviewSection}>
           <Text style={styles.sectionTitle}>Overview</Text>
           <Text style={styles.overview}>{movieDetails.overview}</Text>
         </View>
 
-        {/* Credits */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Credits</Text>
-          {director && (
-            <View style={styles.creditItem}>
-              <Text style={styles.creditRole}>Director</Text>
-              <Text style={styles.creditName}>{director.name}</Text>
-            </View>
-          )}
-          {writers && writers.map((writer, index) => (
-            <View key={index} style={styles.creditItem}>
-              <Text style={styles.creditRole}>Writer</Text>
-              <Text style={styles.creditName}>{writer.name}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* Status and Additional Info */}
-        <View style={styles.additionalInfo}>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Status:</Text>
-            <Text style={styles.infoValue}>{movieDetails.status}</Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Original Language:</Text>
-            <Text style={styles.infoValue}>
-              {movieDetails.original_language.toUpperCase()}
+        {/* 7. Add to Watchlist */}
+        <View style={styles.watchlistSection}>
+          <TouchableOpacity 
+            style={[
+              styles.watchlistButton,
+              isInWatchlist ? styles.watchlistButtonAdded : styles.watchlistButtonAdd
+            ]}
+            onPress={handleAddToWatchlist}
+          >
+            {isInWatchlist ? (
+              <Icon name="bookmark-check" size={20} color="white" />
+            ) : (
+              <Icon name="bookmark-outline" size={20} color="white" />
+            )}
+            <Text style={styles.watchlistButtonText}>
+              {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
             </Text>
-          </View>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Vote Count:</Text>
-            <Text style={styles.infoValue}>{movieDetails.vote_count}</Text>
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     );
@@ -257,7 +250,7 @@ export const DetailsScreen: React.FC = () => {
       <View style={styles.castSection}>
         <Text style={styles.sectionTitle}>Cast</Text>
         <FlatList
-          data={movieDetails.credits.cast.slice(0, 20)} // Show first 20 cast members
+          data={movieDetails.credits.cast.slice(0, 20)}
           horizontal
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id.toString()}
@@ -371,7 +364,6 @@ export const DetailsScreen: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         {renderHeader()}
-        {renderDetails()}
         {renderCastCarousel()}
         {renderRecommendedMovies()}
       </ScrollView>
@@ -432,25 +424,45 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: 'white',
   },
-  backdrop: {
-    width: '100%',
-    height: 250,
+  logoSection: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  logo: {
+    width: 200,
+    height: 60,
+  },
+  titleSection: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: 'white',
   },
   backButton: {
-    position: 'absolute',
-    top: 50,
-    left: 16,
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: '#f8f9fa',
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: 12,
   },
-  posterSection: {
+  title: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#1a1a1a',
+  },
+  posterDetailsSection: {
     flexDirection: 'row',
     padding: 16,
-    marginTop: -80,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
   },
   poster: {
     width: 120,
@@ -458,113 +470,96 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 16,
   },
-  basicInfo: {
+  movieDetails: {
     flex: 1,
-    marginTop: 20,
+    justifyContent: 'space-around',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+  detailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  detailLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#666',
+    width: 120,
+  },
+  detailValue: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
+  },
+  scoreCreditsSection: {
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+  },
+  userScore: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRightWidth: 1,
+    borderRightColor: '#e9ecef',
+    paddingRight: 16,
+  },
+  scoreContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 4,
+  },
+  scoreValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+    marginLeft: 4,
+  },
+  scoreLabel: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  credits: {
+    flex: 2,
+    paddingLeft: 16,
+  },
+  creditItem: {
+    marginBottom: 8,
+  },
+  creditRole: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+    marginBottom: 2,
+  },
+  creditName: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '600',
+  },
+  taglineSection: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
   },
   tagline: {
     fontSize: 16,
     fontStyle: 'italic',
     color: '#666',
-    marginBottom: 12,
+    textAlign: 'center',
+    fontFamily: 'serif',
   },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    gap: 4,
-  },
-  ratingText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#495057',
-  },
-  year: {
-    fontSize: 14,
-    color: '#666',
-  },
-  certification: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-  },
-  watchlistButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    gap: 8,
-    maxWidth: 200,
-  },
-  watchlistButtonAdd: {
-    backgroundColor: '#007bff',
-  },
-  watchlistButtonAdded: {
-    backgroundColor: '#28a745',
-  },
-  watchlistButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  detailsSection: {
-    backgroundColor: 'white',
+  overviewSection: {
     padding: 16,
-    marginTop: 8,
-  },
-  keyFacts: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 16,
-    paddingVertical: 12,
+    backgroundColor: 'white',
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
-  },
-  factItem: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  factText: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
-  },
-  genres: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 16,
-    gap: 8,
-  },
-  genreTag: {
-    backgroundColor: '#e9ecef',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-  },
-  genreText: {
-    fontSize: 12,
-    color: '#495057',
-    fontWeight: '500',
-  },
-  section: {
-    marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
@@ -577,40 +572,33 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     color: '#495057',
   },
-  creditItem: {
+  watchlistSection: {
+    padding: 16,
+    backgroundColor: 'white',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e9ecef',
+    alignItems: 'center',
+  },
+  watchlistButton: {
     flexDirection: 'row',
-    marginBottom: 8,
-  },
-  creditRole: {
-    fontSize: 14,
-    color: '#666',
-    width: 80,
-    fontWeight: '500',
-  },
-  creditName: {
-    fontSize: 14,
-    color: '#495057',
-    flex: 1,
-  },
-  additionalInfo: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
     borderRadius: 8,
+    gap: 8,
+    minWidth: 200,
   },
-  infoRow: {
-    flexDirection: 'row',
-    marginBottom: 6,
+  watchlistButtonAdd: {
+    backgroundColor: '#007bff',
   },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-    width: 120,
+  watchlistButtonAdded: {
+    backgroundColor: '#28a745',
   },
-  infoValue: {
-    fontSize: 14,
-    color: '#495057',
-    flex: 1,
+  watchlistButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
   castSection: {
     backgroundColor: 'white',

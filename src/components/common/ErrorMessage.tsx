@@ -14,6 +14,7 @@ export const ErrorMessage: React.FC<ErrorMessageProps> = ({
   return (
     <View style={styles.container}>
       <AlertCircle size={48} color="#dc3545" />
+      {/* Fixed: All text wrapped in Text components */}
       <Text style={styles.title}>Something went wrong</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (

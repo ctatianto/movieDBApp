@@ -11,11 +11,11 @@ export const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   return (
     <View style={styles.container}>
       <ActivityIndicator size="large" color="#007bff" />
+      {/* Fixed: Text wrapped in Text component */}
       <Text style={styles.message}>{message}</Text>
     </View>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

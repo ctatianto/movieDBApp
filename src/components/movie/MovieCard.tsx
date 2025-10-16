@@ -11,21 +11,24 @@ interface MovieCardProps {
 export const MovieCard: React.FC<MovieCardProps> = ({ movie, onPress }) => {
   const posterUrl = movie.poster_path 
     ? `${API_CONFIG.IMAGE_BASE_URL}${movie.poster_path}`
-    : 'https://via.placeholder.com/150x225/cccccc/666666?text=No+Image';
+    : 'https://via.placeholder.com/100x150/cccccc/666666?text=No+Image';
 
   return (
     <TouchableOpacity style={styles.container} onPress={() => onPress(movie)}>
       <Image source={{ uri: posterUrl }} style={styles.poster} />
-      <View style={styles.info}>
+      <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
           {movie.title}
         </Text>
-        <Text style={styles.releaseDate}>
+        <Text style={styles.year}>
           {new Date(movie.release_date).getFullYear()}
         </Text>
         <Text style={styles.overview} numberOfLines={3}>
           {movie.overview}
         </Text>
+        <View style={styles.rating}>
+          <Text style={styles.ratingText}>★ {movie.vote_average.toFixed(1)}</Text>
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -35,24 +38,28 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     backgroundColor: 'white',
-    borderRadius: 8,
-    marginVertical: 4,
-    marginHorizontal: 8,
-    padding: 12,
+    marginHorizontal: 20,
+    marginVertical: 6,
+    borderRadius: 12,
+    padding: 16,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: 3,
     elevation: 3,
   },
   poster: {
     width: 80,
     height: 120,
-    borderRadius: 4,
+    borderRadius: 8,
   },
-  info: {
+  content: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 16,
+    justifyContent: 'space-between',
   },
   title: {
     fontSize: 16,
@@ -60,7 +67,7 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 4,
   },
-  releaseDate: {
+  year: {
     fontSize: 14,
     color: '#666',
     marginBottom: 8,
@@ -69,5 +76,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#777',
     lineHeight: 16,
+    marginBottom: 8,
+  },
+  rating: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#fff9e6',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#ffc107',
   },
 });

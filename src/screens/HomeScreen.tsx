@@ -6,13 +6,13 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
-  Alert,
-  ActivityIndicator,
   SafeAreaView,
   StatusBar,
   Keyboard,
+  Image,
 } from 'react-native';
-import { Search, Filter, ArrowUp, ArrowDown } from 'lucide-react-native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useMovies } from '../hooks/useMovies';
 import { MovieCard } from '../components/movie/MovieCard';
 import { Dropdown } from '../components/common/Dropdown';
@@ -20,17 +20,12 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorMessage } from '../components/common/ErrorMessage';
 import { CATEGORIES, SORT_OPTIONS } from '../utils/constants';
 import { Movie } from '../context/types';
-import { useApp } from '../context/AppContext';
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '../../App';
 
-// Update the props interface
-interface HomeScreenProps {
-    // No need for navigation prop since we'll use useNavigation hook
-  }
+type HomeScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
-export const HomeScreen: React.FC<HomeScreenProps> = () => {
+export const HomeScreen: React.FC = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const {
     movies,
     loading,
@@ -47,19 +42,14 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
     clearSearch,
   } = useMovies();
 
-  const navigation = useNavigation<NativeStackNavigationProp<HomeStackParamList>>();
-  
-
-  const { state } = useApp();
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
   const [isSearching, setIsSearching] = useState(false);
 
   useEffect(() => {
-    // Load movies when component mounts
-    if (state.movies.length === 0 && !loading && !error) {
+    if (!isSearching) {
       fetchMovies(category);
     }
-  }, []);
+  }, [category, isSearching]);
 
   const handleSearch = () => {
     Keyboard.dismiss();
@@ -69,16 +59,13 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 
   const handleClearSearch = () => {
     setLocalSearchQuery('');
-    clearSearch(); // Use the clearSearch from useMovies hook
+    setSearchQuery('');
+    setIsSearching(false);
+    fetchMovies(category);
   };
 
   const handleMoviePress = (movie: Movie) => {
     navigation.navigate('Details', { movieId: movie.id });
-  };
-
-  const handleSortOrderToggle = () => {
-    const newSortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
-    setSort(sortBy, newSortOrder);
   };
 
   const getSortedMovies = () => {
@@ -104,8 +91,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
           return 0;
       }
 
-      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
+      if (aValue < bValue) return sortOrder === 'desc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'desc' ? 1 : -1;
       return 0;
     });
 
@@ -114,86 +101,79 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      <Text style={styles.title}>Movie Database</Text>
-      
-      {/* Category Dropdown */}
-      <View style={styles.filterRow}>
-        <View style={styles.filterContainer}>
-          <Text style={styles.filterLabel}>Category</Text>
-          <Dropdown
-            options={CATEGORIES}
-            selectedValue={category}
-            onSelect={(value) => {
-              setCategory(value as any);
-              setIsSearching(false);
-              setLocalSearchQuery('');
-            }}
-          />
-        </View>
+      {/* Logo Section */}
+      <View style={styles.logoSection}>
+        <Image 
+          source={require('../assets/Logo.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
 
-        {/* Sort Options */}
-        <View style={styles.filterContainer}>
-          <Text style={styles.filterLabel}>Sort By</Text>
-          <View style={styles.sortRow}>
-            <View style={styles.sortDropdown}>
-              <Dropdown
-                options={SORT_OPTIONS}
-                selectedValue={sortBy}
-                onSelect={(value) => setSort(value as any, sortOrder)}
-              />
-            </View>
-            <TouchableOpacity
-              style={styles.sortOrderButton}
-              onPress={handleSortOrderToggle}
-            >
-              {sortOrder === 'asc' ? (
-                <ArrowUp size={20} color="#666" />
-              ) : (
-                <ArrowDown size={20} color="#666" />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
+      {/* Now Playing Dropdown */}
+      <View style={styles.filterSection}>
+        <Dropdown
+          options={CATEGORIES}
+          selectedValue={category}
+          onSelect={(value) => {
+            setCategory(value as any);
+            setIsSearching(false);
+            setLocalSearchQuery('');
+          }}
+          placeholder="Select Category"
+        />
+      </View>
+
+      {/* Sort By Dropdown */}
+      <View style={styles.filterSection}>
+        <Dropdown
+          options={SORT_OPTIONS}
+          selectedValue={sortBy}
+          onSelect={(value) => setSort(value as any, sortOrder)}
+          placeholder="Sort by"
+        />
       </View>
 
       {/* Search Section */}
-      <View style={styles.searchSection}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for movies..."
-          value={localSearchQuery}
-          onChangeText={setLocalSearchQuery}
-          onSubmitEditing={handleSearch}
-          returnKeyType="search"
-        />
-        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-          <Search size={20} color="white" />
-        </TouchableOpacity>
+      <View style={styles.filterSection}>
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search..."
+              placeholderTextColor="#999"
+              value={localSearchQuery}
+              onChangeText={setLocalSearchQuery}
+              onSubmitEditing={handleSearch}
+              returnKeyType="search"
+            />
+          </View>
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+            <Text style={styles.searchButtonText}>Search</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
-      // Update the search section in renderHeader:
-{localSearchQuery ? (
-  <TouchableOpacity style={styles.clearSearchButton} onPress={handleClearSearch}>
-    <Text style={styles.clearSearchText}>Clear Search</Text>
-  </TouchableOpacity>
-) : null}
-
-      {/* Results Header */}
-      <View style={styles.resultsHeader}>
-        <Text style={styles.resultsTitle}>
+      {/* Results Info */}
+      <View style={styles.resultsInfo}>
+        <Text style={styles.resultsText}>
           {isSearching 
-            ? `Search Results for "${searchQuery}"`
+            ? `Search results for "${searchQuery}"`
             : `${CATEGORIES.find(cat => cat.value === category)?.label} Movies`
           }
         </Text>
         <Text style={styles.resultsCount}>{getSortedMovies().length} movies</Text>
+        {localSearchQuery ? (
+          <TouchableOpacity onPress={handleClearSearch}>
+            <Text style={styles.clearText}>Clear</Text>
+          </TouchableOpacity>
+        ) : null}
       </View>
     </View>
   );
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Search size={64} color="#ccc" />
       <Text style={styles.emptyStateTitle}>
         {isSearching ? 'No movies found' : 'No movies available'}
       </Text>
@@ -224,7 +204,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
       
       {loading && movies.length === 0 ? (
         <LoadingSpinner message="Loading movies..." />
@@ -239,6 +219,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
           ListEmptyComponent={renderEmptyState}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          style={styles.list}
         />
       )}
     </SafeAreaView>
@@ -248,109 +229,102 @@ export const HomeScreen: React.FC<HomeScreenProps> = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
+  },
+  list: {
+    flex: 1,
   },
   listContent: {
     flexGrow: 1,
     paddingBottom: 20,
   },
   header: {
-    backgroundColor: 'white',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: '#fff',
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  logo: {
+    width: 200,
+    height: 60,
+  },
+  filterSection: {
     marginBottom: 20,
-    textAlign: 'center',
-  },
-  filterRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-    gap: 12,
-  },
-  filterContainer: {
-    flex: 1,
   },
   filterLabel: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#495057',
-    marginBottom: 6,
+    color: '#333',
+    marginBottom: 8,
   },
-  sortRow: {
+  searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    gap: 12,
   },
-  sortDropdown: {
+  searchInputContainer: {
     flex: 1,
-  },
-  sortOrderButton: {
-    width: 44,
-    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'white',
+    borderColor: '#e9ecef',
+    paddingHorizontal: 16,
   },
-  searchSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
+  searchIcon: {
+    marginRight: 12,
   },
   searchInput: {
     flex: 1,
     height: 50,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 16,
     fontSize: 16,
-    backgroundColor: 'white',
+    color: '#333',
   },
   searchButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
     backgroundColor: '#007bff',
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderRadius: 8,
+    minWidth: 80,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  clearSearchButton: {
-    alignSelf: 'flex-start',
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: '#6c757d',
-    borderRadius: 6,
-    marginBottom: 16,
-  },
-  clearSearchText: {
+  searchButtonText: {
     color: 'white',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 16,
+    fontWeight: '600',
   },
-  resultsHeader: {
+  resultsInfo: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: 8,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
   },
-  resultsTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
+  resultsText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
   },
   resultsCount: {
     fontSize: 14,
-    color: '#6c757d',
+    color: '#666',
+    fontWeight: '500',
+    marginLeft: 12,
+  },
+  clearText: {
+    fontSize: 14,
+    color: '#007bff',
+    fontWeight: '500',
+    marginLeft: 12,
   },
   emptyState: {
     flex: 1,
@@ -360,28 +334,28 @@ const styles = StyleSheet.create({
     minHeight: 300,
   },
   emptyStateTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
-    color: '#6c757d',
+    color: '#666',
     marginTop: 16,
     marginBottom: 8,
   },
   emptyStateText: {
-    fontSize: 16,
-    color: '#adb5bd',
+    fontSize: 14,
+    color: '#999',
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: 20,
   },
   emptyStateButton: {
     marginTop: 20,
     paddingVertical: 10,
     paddingHorizontal: 20,
     backgroundColor: '#007bff',
-    borderRadius: 6,
+    borderRadius: 8,
   },
   emptyStateButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
 });
