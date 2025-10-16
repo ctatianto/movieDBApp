@@ -120,7 +120,7 @@ export const DetailsScreen: React.FC = () => {
 
     return (
       <View style={styles.header}>
-        {/* 1. Logo at top */}
+        {/* Logo Section - Keep white background */}
         <View style={styles.logoSection}>
           <Image 
             source={require('../assets/Logo.png')} 
@@ -129,59 +129,49 @@ export const DetailsScreen: React.FC = () => {
           />
         </View>
 
-        {/* 2. Back button + Movie title */}
+        {/* Title Section with Back Button - Blue background */}
         <View style={styles.titleSection}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-left" size={24} color="#333" />
+            <Icon name="arrow-left" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.title} numberOfLines={2}>
             {movieDetails.title}
           </Text>
         </View>
 
-        {/* 3. Poster + Movie Details */}
+        {/* Poster and Movie Details - Blue background */}
         <View style={styles.posterDetailsSection}>
           <Image source={{ uri: posterUrl }} style={styles.poster} />
           
           <View style={styles.movieDetails}>
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>PG</Text>
               <Text style={styles.detailValue}>{movieDetails.adult ? '18+' : 'PG-13'}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Release Date</Text>
-              <Text style={styles.detailValue}>{formatReleaseDate(movieDetails.release_date)}</Text>
+              <Text style={styles.detailValue}>{formatReleaseDate(movieDetails.release_date)}</Text><Text style={styles.detailValue}>{formatRuntime(movieDetails.runtime)}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Duration</Text>
-              <Text style={styles.detailValue}>{formatRuntime(movieDetails.runtime)}</Text>
-            </View>
-            
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Genres</Text>
               <Text style={styles.detailValue}>
                 {movieDetails.genres.map(genre => genre.name).join(', ')}
               </Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Status</Text>
               <Text style={styles.detailValue}>{movieDetails.status}</Text>
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Original Language</Text>
               <Text style={styles.detailValue}>{movieDetails.original_language.toUpperCase()}</Text>
             </View>
           </View>
         </View>
 
-        {/* 4. User Score + Credits (side by side) */}
+        {/* User Score + Credits - Blue background */}
         <View style={styles.scoreCreditsSection}>
           <View style={styles.userScore}>
             <View style={styles.scoreContainer}>
@@ -207,45 +197,45 @@ export const DetailsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* 5. Tagline */}
+        {/* Tagline - Blue background */}
         {movieDetails.tagline ? (
           <View style={styles.taglineSection}>
             <Text style={styles.tagline}>"{movieDetails.tagline}"</Text>
           </View>
         ) : null}
 
-        {/* 6. Overview */}
+        {/* Overview - Blue background */}
         <View style={styles.overviewSection}>
           <Text style={styles.sectionTitle}>Overview</Text>
           <Text style={styles.overview}>{movieDetails.overview}</Text>
         </View>
 
-        {/* 7. Add to Watchlist */}
         <View style={styles.watchlistSection}>
-          <TouchableOpacity 
-            style={[
-              styles.watchlistButton,
-              isInWatchlist ? styles.watchlistButtonAdded : styles.watchlistButtonAdd
-            ]}
-            onPress={handleAddToWatchlist}
-          >
-            {isInWatchlist ? (
-              <Icon name="bookmark-check" size={20} color="white" />
-            ) : (
-              <Icon name="bookmark-outline" size={20} color="white" />
-            )}
-            <Text style={styles.watchlistButtonText}>
-              {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+  <TouchableOpacity 
+    style={[
+      styles.watchlistButton,
+      isInWatchlist ? styles.watchlistButtonAdded : styles.watchlistButtonAdd
+    ]}
+    onPress={handleAddToWatchlist}
+  >
+    {isInWatchlist ? (
+      <Icon name="bookmark-check" size={20} color="white" />
+    ) : (
+      <Icon name="bookmark-outline" size={20} color="white" />
+    )}
+    <Text style={styles.watchlistButtonText}>
+      {isInWatchlist ? 'In Watchlist' : 'Add to Watchlist'}
+    </Text>
+  </TouchableOpacity>
+</View>
       </View>
     );
   };
 
+  // ... rest of the component (castCarousel, recommendedMovies, etc.) remains the same
   const renderCastCarousel = () => {
     if (!movieDetails?.credits?.cast?.length) return null;
-
+  
     return (
       <View style={styles.castSection}>
         <Text style={styles.sectionTitle}>Cast</Text>
@@ -260,7 +250,7 @@ export const DetailsScreen: React.FC = () => {
                 source={{ 
                   uri: item.profile_path 
                     ? `${API_CONFIG.IMAGE_BASE_URL}${item.profile_path}`
-                    : 'https://via.placeholder.com/100x100/cccccc/666666?text=No+Image'
+                    : 'https://via.placeholder.com/138x175/cccccc/666666?text=No+Image'
                 }} 
                 style={styles.castImage}
               />
@@ -422,14 +412,13 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: '#00B4E4',
   },
   logoSection: {
     alignItems: 'center',
     paddingTop: 20,
     paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: 'white',
   },
   logo: {
     width: 200,
@@ -440,13 +429,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: 'white',
+    backgroundColor: '#0099c2',
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
@@ -455,14 +444,12 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#fff',
   },
   posterDetailsSection: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: '#0099c2',
   },
   poster: {
     width: 120,
@@ -483,29 +470,27 @@ const styles = StyleSheet.create({
   detailLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
     width: 120,
   },
   detailValue: {
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
     fontWeight: '500',
     flex: 1,
-    textAlign: 'right',
+    textAlign: 'left',
   },
   scoreCreditsSection: {
     flexDirection: 'row',
     padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: '#00B4E4',
   },
   userScore: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     borderRightWidth: 1,
-    borderRightColor: '#e9ecef',
+    borderRightColor: 'rgba(255, 255, 255, 0.3)',
     paddingRight: 16,
   },
   scoreContainer: {
@@ -516,12 +501,12 @@ const styles = StyleSheet.create({
   scoreValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#fff',
     marginLeft: 4,
   },
   scoreLabel: {
     fontSize: 12,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
   },
   credits: {
@@ -533,67 +518,63 @@ const styles = StyleSheet.create({
   },
   creditRole: {
     fontSize: 12,
-    color: '#666',
+    color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
     marginBottom: 2,
   },
   creditName: {
     fontSize: 14,
-    color: '#333',
+    color: '#fff',
     fontWeight: '600',
   },
   taglineSection: {
     padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: '#00B4E4',
   },
   tagline: {
     fontSize: 16,
     fontStyle: 'italic',
-    color: '#666',
+    color: '#fff',
     textAlign: 'center',
     fontFamily: 'serif',
   },
   overviewSection: {
     padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    backgroundColor: '#00B4E4',
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: '#fff',
     marginBottom: 12,
   },
   overview: {
     fontSize: 16,
     lineHeight: 24,
-    color: '#495057',
+    color: '#fff',
   },
   watchlistSection: {
     padding: 16,
-    backgroundColor: 'white',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
-    alignItems: 'center',
+    backgroundColor: '#00B4E4',
+    paddingBottom: 24,
   },
   watchlistButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
     gap: 8,
     minWidth: 200,
+    borderWidth: 2,
+    borderColor: '#fff',
+    alignSelf: 'flex-start',
   },
   watchlistButtonAdd: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#00B4E4',
   },
   watchlistButtonAdded: {
-    backgroundColor: '#28a745',
+    backgroundColor: '#00B4E4',
   },
   watchlistButtonText: {
     color: 'white',
@@ -609,28 +590,29 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   castCard: {
-    width: 100,
+    width: 138,
     marginRight: 12,
     alignItems: 'center',
   },
   castImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 138,
+    height: 175,
+    borderRadius: 8,
     marginBottom: 8,
   },
   castName: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: '600',
     color: '#1a1a1a',
     textAlign: 'center',
     marginBottom: 2,
+    lineHeight: 18,
   },
   castCharacter: {
-    fontSize: 11,
+    fontSize: 12,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 14,
+    lineHeight: 16,
   },
   recommendedSection: {
     backgroundColor: 'white',

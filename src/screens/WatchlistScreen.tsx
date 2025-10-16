@@ -171,7 +171,13 @@ export const WatchlistScreen: React.FC = () => {
         >
           <ChevronLeft size={24} color="#333" />
         </TouchableOpacity>
-        <Text style={styles.screenTitle}>Watchlist</Text>
+        <View style={styles.logoSection}>
+        <Image 
+          source={require('../assets/Logo.png')} 
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
         <View style={styles.placeholder} />
       </View>
 
@@ -304,6 +310,15 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
+  logoSection: {
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingTop: 8,
+  },
+  logo: {
+    width: 120, // Adjust based on your logo dimensions
+    height: 40, // Adjust based on your logo dimensions
+  },
   header: {
     backgroundColor: 'white',
     paddingHorizontal: 16,
@@ -336,8 +351,10 @@ const styles = StyleSheet.create({
   },
   userSection: {
     flexDirection: 'row',
+    backgroundColor:'#042541',
     alignItems: 'center',
     marginBottom: 20,
+    padding:20,
   },
   avatar: {
     width: 50,
@@ -354,7 +371,7 @@ const styles = StyleSheet.create({
   username: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#1a1a1a',
+    color: 'white',
     marginBottom: 4,
   },
   joinDate: {
@@ -364,7 +381,7 @@ const styles = StyleSheet.create({
   },
   joinDateText: {
     fontSize: 14,
-    color: '#666',
+    color: 'white',
   },
   statsFilterSection: {
     flexDirection: 'row',

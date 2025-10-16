@@ -10,6 +10,7 @@ import {
   StatusBar,
   Keyboard,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -40,6 +41,12 @@ export const HomeScreen: React.FC = () => {
     setSort,
     setSearchQuery,
     clearSearch,
+    // Add these to your useMovies hook or implement locally
+    loadMoreMovies,
+    hasMore,
+    loadingMore,
+    currentPage,
+    totalPages,
   } = useMovies();
 
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery);
@@ -47,25 +54,36 @@ export const HomeScreen: React.FC = () => {
 
   useEffect(() => {
     if (!isSearching) {
-      fetchMovies(category);
+      fetchMovies(category, 1); // Reset to page 1 when category changes
     }
   }, [category, isSearching]);
 
   const handleSearch = () => {
     Keyboard.dismiss();
     setIsSearching(!!localSearchQuery.trim());
-    searchMovies(localSearchQuery);
+    searchMovies(localSearchQuery, 1); // Reset to page 1 when searching
   };
 
   const handleClearSearch = () => {
     setLocalSearchQuery('');
     setSearchQuery('');
     setIsSearching(false);
-    fetchMovies(category);
+    fetchMovies(category, 1);
   };
 
   const handleMoviePress = (movie: Movie) => {
     navigation.navigate('Details', { movieId: movie.id });
+  };
+
+  // Load more function
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      if (isSearching) {
+        searchMovies(searchQuery, currentPage + 1);
+      } else {
+        fetchMovies(category, currentPage + 1);
+      }
+    }
   };
 
   const getSortedMovies = () => {
@@ -91,12 +109,38 @@ export const HomeScreen: React.FC = () => {
           return 0;
       }
 
-      if (aValue < bValue) return sortOrder === 'desc' ? -1 : 1;
-      if (aValue > bValue) return sortOrder === 'desc' ? 1 : -1;
+      if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1;
       return 0;
     });
 
     return sortedMovies;
+  };
+
+  // Render load more button
+  const renderLoadMoreButton = () => {
+    if (!hasMore || getSortedMovies().length === 0) return null;
+  
+    return (
+      <View style={styles.loadMoreContainer}>
+        <TouchableOpacity 
+          style={styles.loadMoreButton}
+          onPress={handleLoadMore}
+          disabled={loadingMore}
+        >
+          {loadingMore ? (
+            <View style={styles.loadingContent}>
+              <ActivityIndicator size="small" color="#ffffff" />
+              <Text style={styles.loadMoreButtonText}>Loading...</Text>
+            </View>
+          ) : (
+            <Text style={styles.loadMoreButtonText}>
+              Load More
+            </Text>
+          )}
+        </TouchableOpacity>
+      </View>
+    );
   };
 
   const renderHeader = () => (
@@ -134,24 +178,26 @@ export const HomeScreen: React.FC = () => {
         />
       </View>
 
-      {/* Search Section */}
+      {/* Search Field - Same width as dropdowns */}
       <View style={styles.filterSection}>
-        <View style={styles.searchContainer}>
-          <View style={styles.searchInputContainer}>
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search..."
-              placeholderTextColor="#999"
-              value={localSearchQuery}
-              onChangeText={setLocalSearchQuery}
-              onSubmitEditing={handleSearch}
-              returnKeyType="search"
-            />
-          </View>
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <Text style={styles.searchButtonText}>Search</Text>
-          </TouchableOpacity>
+        <View style={styles.searchInputContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search..."
+            placeholderTextColor="#999"
+            value={localSearchQuery}
+            onChangeText={setLocalSearchQuery}
+            onSubmitEditing={handleSearch}
+            returnKeyType="search"
+          />
         </View>
+      </View>
+
+      {/* Search Button - Below search field, same width */}
+      <View style={styles.searchButtonSection}>
+        <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+          <Text style={styles.searchButtonText}>Search</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Results Info */}
@@ -169,6 +215,20 @@ export const HomeScreen: React.FC = () => {
           </TouchableOpacity>
         ) : null}
       </View>
+
+      {/* Pagination Info */}
+      {getSortedMovies().length > 0 && (
+        <View style={styles.paginationInfo}>
+          <Text style={styles.paginationText}>
+            Page {currentPage} of {totalPages}
+          </Text>
+          {hasMore && (
+            <Text style={styles.moreAvailableText}>
+              • More movies available
+            </Text>
+          )}
+        </View>
+      )}
     </View>
   );
 
@@ -196,7 +256,7 @@ export const HomeScreen: React.FC = () => {
       <SafeAreaView style={styles.container}>
         <ErrorMessage 
           message={error}
-          onRetry={() => isSearching ? searchMovies(searchQuery) : fetchMovies(category)}
+          onRetry={() => isSearching ? searchMovies(searchQuery, 1) : fetchMovies(category, 1)}
         />
       </SafeAreaView>
     );
@@ -216,6 +276,7 @@ export const HomeScreen: React.FC = () => {
             <MovieCard movie={item} onPress={handleMoviePress} />
           )}
           ListHeaderComponent={renderHeader}
+          ListFooterComponent={renderLoadMoreButton}
           ListEmptyComponent={renderEmptyState}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -253,49 +314,34 @@ const styles = StyleSheet.create({
     height: 60,
   },
   filterSection: {
-    marginBottom: 20,
-  },
-  filterLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
+    marginBottom: 16,
   },
   searchInputContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#f8f9fa',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#e9ecef',
     paddingHorizontal: 16,
-  },
-  searchIcon: {
-    marginRight: 12,
+    height: 44,
   },
   searchInput: {
-    flex: 1,
-    height: 50,
+    height: 42,
     fontSize: 16,
     color: '#333',
   },
+  searchButtonSection: {
+    marginBottom: 20,
+  },
   searchButton: {
-    backgroundColor: '#007bff',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderRadius: 8,
-    minWidth: 80,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 8,
+    borderRadius: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    height: 42,
   },
   searchButtonText: {
-    color: 'white',
+    color: '#000000',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -325,6 +371,51 @@ const styles = StyleSheet.create({
     color: '#007bff',
     fontWeight: '500',
     marginLeft: 12,
+  },
+  paginationInfo: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f0f0f0',
+  },
+  paginationText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
+  },
+  moreAvailableText: {
+    fontSize: 12,
+    color: '#28a745',
+    fontWeight: '500',
+  },
+  loadMoreContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+  },
+  loadMoreButton: {
+    backgroundColor: '#007bff',
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Make button stretch full width
+    width: '100%',
+    minHeight: 54,
+  },
+  loadMoreButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  loadingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   emptyState: {
     flex: 1,

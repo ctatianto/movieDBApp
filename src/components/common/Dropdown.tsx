@@ -91,12 +91,12 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#e9ecef',
     borderRadius: 8,
-    padding: 16,
+    padding: 8,
     backgroundColor: '#f8f9fa',
-    height: 52,
+    height: 42,
   },
   dropdownButtonText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#333',
     fontWeight: '500',
     flex: 1,
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#007bff10',
   },
   optionText: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#333',
   },
   selectedOptionText: {
