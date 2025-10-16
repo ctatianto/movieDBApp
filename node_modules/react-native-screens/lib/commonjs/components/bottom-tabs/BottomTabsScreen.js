@@ -40,6 +40,7 @@ function BottomTabsScreen(props) {
     selectedIcon,
     standardAppearance,
     scrollEdgeAppearance,
+    scrollEdgeEffects,
     ...rest
   } = props;
   const shouldFreeze = shouldFreezeScreen(nativeViewIsVisible, isFocused, freezeContents);
@@ -89,7 +90,11 @@ function BottomTabsScreen(props) {
     scrollEdgeAppearance: mapAppearanceToNativeProp(scrollEdgeAppearance)
     // @ts-ignore - This is debug only anyway
     ,
-    ref: componentNodeRef
+    ref: componentNodeRef,
+    bottomScrollEdgeEffect: scrollEdgeEffects?.bottom,
+    leftScrollEdgeEffect: scrollEdgeEffects?.left,
+    rightScrollEdgeEffect: scrollEdgeEffects?.right,
+    topScrollEdgeEffect: scrollEdgeEffects?.top
   }, rest), /*#__PURE__*/_react.default.createElement(_reactFreeze.Freeze, {
     freeze: shouldFreeze,
     placeholder: rest.placeholder

@@ -8,39 +8,44 @@ export interface Movie {
     backdrop_path?: string;
   }
   
-  export interface MovieDetails extends Movie {
-    runtime: number;
-    genres: Genre[];
-    status: string;
-    original_language: string;
-    vote_count: number;
-    tagline: string;
-    credits?: Credits;
-    recommendations?: Movie[];
-  }
+  // Add to existing types
+export interface MovieDetails extends Movie {
+  runtime: number;
+  genres: Genre[];
+  status: string;
+  original_language: string;
+  vote_count: number;
+  tagline: string;
+  adult: boolean;
+  credits?: Credits;
+  recommendations?: {
+    results: Movie[];
+  };
+}
+
+export interface Credits {
+  cast: CastMember[];
+  crew: CrewMember[];
+}
+
+export interface CastMember {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+  order: number;
+}
+
+export interface CrewMember {
+  id: number;
+  name: string;
+  job: string;
+  department: string;
+}
   
   export interface Genre {
     id: number;
     name: string;
-  }
-  
-  export interface Credits {
-    cast: CastMember[];
-    crew: CrewMember[];
-  }
-  
-  export interface CastMember {
-    id: number;
-    name: string;
-    character: string;
-    profile_path: string | null;
-  }
-  
-  export interface CrewMember {
-    id: number;
-    name: string;
-    job: string;
-    department: string;
   }
   
   export type MovieCategory = 'now_playing' | 'upcoming' | 'popular';
