@@ -186,7 +186,6 @@ export const HomeScreen: React.FC = () => {
         </View>
       </View>
 
-      {/* Search Button - Below search field, same width */}
       <View>
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchButtonText}>Search</Text>

@@ -8,7 +8,6 @@ export interface Movie {
   backdrop_path?: string;
 }
 
-// Add to existing types
 export interface MovieDetails extends Movie {
   runtime: number;
   genres: Genre[];
@@ -72,7 +71,6 @@ export type AppAction =
   | { type: 'REMOVE_FROM_WATCHLIST'; payload: number }
   | { type: 'SET_WATCHLIST'; payload: Movie[] };
 
-// Add pagination response interfaces
 export interface MoviesResponse {
   page: number;
   results: Movie[];
@@ -94,7 +92,3 @@ export interface PaginatedResponse<T> {
   total_pages: number;
   total_results: number;
 }
-
-// Then you could use it like:
-// export type MoviesResponse = PaginatedResponse<Movie>;
-// export type SearchResponse = PaginatedResponse<Movie>;
