@@ -45,8 +45,7 @@ const HomeStackNavigator = () => (
       name="Details" 
       component={DetailsScreen}
       options={{ 
-        title: 'Movie Details',
-        headerBackTitle: 'Back'
+        headerShown: false // Add this line
       }}
     />
   </HomeStack.Navigator>
@@ -63,8 +62,7 @@ const WatchlistStackNavigator = () => (
       name="Details" 
       component={DetailsScreen}
       options={{ 
-        title: 'Movie Details',
-        headerBackTitle: 'Back'
+        headerShown: false // Add this line
       }}
     />
   </WatchlistStack.Navigator>
@@ -108,7 +106,7 @@ const TabNavigator = () => (
       name="Home"
       component={HomeStackNavigator}
       options={{
-        title: 'Home',
+        title: '',
         tabBarIcon: ({ focused }) => (
           <TabBarIcon 
             source={require('./src/assets/Home.png')}
@@ -123,7 +121,7 @@ const TabNavigator = () => (
       name="Watchlist"
       component={WatchlistStackNavigator}
       options={{
-        title: 'Watchlist',
+        title: '',
         tabBarIcon: ({ focused }) => (
           <TabBarIcon 
             source={require('./src/assets/Watchlist.png')}
@@ -151,8 +149,7 @@ const App = () => {
             name="Details" 
             component={DetailsScreen}
             options={{ 
-              title: 'Movie Details',
-              headerBackTitle: 'Back'
+              headerShown: false // Add this line
             }}
           />
         </Stack.Navigator>
@@ -165,10 +162,11 @@ const styles = StyleSheet.create({
   tabBarItem: {
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 25,
   },
   tabBarIcon: {
-    width: 24,
-    height: 24,
+    width: 200,
+    height: 200,
   },
   tabBarLabel: {
     fontSize: 12,

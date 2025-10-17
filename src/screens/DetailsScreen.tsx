@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Alert,
+  Animated,
 } from 'react-native';
 import { RouteProp, useRoute, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -20,6 +21,7 @@ import { useApp } from '../context/AppContext';
 import { API_CONFIG } from '../utils/constants';
 import { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { HomeStackParamList, WatchlistStackParamList } from '../../App';
+import { HeaderWithLogo } from '../components/common/HeaderWithLogo';
 
 type DetailsScreenRouteProp = NativeStackScreenProps<HomeStackParamList | WatchlistStackParamList, 'Details'>['route'];
 type DetailsScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList | WatchlistStackParamList>;
@@ -52,6 +54,12 @@ export const DetailsScreen: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const getScoreColor = (percentage: number) => {
+    if (percentage >= 70) return '#45ff8f'; // Green for high scores
+    if (percentage >= 50) return '#ffc107'; // Yellow for medium scores
+    return '#ff4757'; // Red for low scores
   };
 
   const handleRecommendedMoviePress = (movieId: number) => {
@@ -101,11 +109,13 @@ export const DetailsScreen: React.FC = () => {
   const formatReleaseDate = (dateString: string) => {
     if (!dateString) return 'TBA';
     const date = new Date(dateString);
-    return date.toLocaleDateString('en-SG', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    
+    // Format as MM/DD/YYYY
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(date.getDate()).padStart(2, '0');
+    const year = date.getFullYear();
+    
+    return `${month}/${day}/${year}`;
   };
 
   const renderHeader = () => {
@@ -120,22 +130,16 @@ export const DetailsScreen: React.FC = () => {
 
     return (
       <View style={styles.header}>
-        {/* Logo Section - Keep white background */}
-        <View style={styles.logoSection}>
-          <Image 
-            source={require('../assets/Logo.png')} 
-            style={styles.logo}
-            resizeMode="contain"
-          />
-        </View>
-
-        {/* Title Section with Back Button - Blue background */}
+      <HeaderWithLogo />
         <View style={styles.titleSection}>
           <TouchableOpacity 
-            style={styles.backButton}
             onPress={() => navigation.goBack()}
           >
-            <Icon name="arrow-left" size={24} color="#fff" />
+            <Image 
+          source={require('../assets/BackButton.png')} 
+          style={styles.backButton}
+          resizeMode="contain"
+        />
           </TouchableOpacity>
           <Text style={styles.title} numberOfLines={2}>
             {movieDetails.title}
@@ -152,8 +156,12 @@ export const DetailsScreen: React.FC = () => {
             </View>
             
             <View style={styles.detailRow}>
-              <Text style={styles.detailValue}>{formatReleaseDate(movieDetails.release_date)}</Text><Text style={styles.detailValue}>{formatRuntime(movieDetails.runtime)}</Text>
-            </View>
+  <View style={styles.dateDurationContainer}>
+    <Text style={styles.detailValue}>{formatReleaseDate(movieDetails.release_date)}</Text>
+    <Text style={styles.dotSeparator}>•</Text>
+    <Text style={styles.detailValue}>{formatRuntime(movieDetails.runtime)}</Text>
+  </View>
+</View>
             
             <View style={styles.detailRow}>
               <Text style={styles.detailValue}>
@@ -173,13 +181,41 @@ export const DetailsScreen: React.FC = () => {
 
         {/* User Score + Credits - Blue background */}
         <View style={styles.scoreCreditsSection}>
-          <View style={styles.userScore}>
-            <View style={styles.scoreContainer}>
-              <Icon name="star" size={20} color="#ffc107" />
-              <Text style={styles.scoreValue}>{movieDetails.vote_average.toFixed(1)}</Text>
-            </View>
-            <Text style={styles.scoreLabel}>User Score</Text>
-          </View>
+        <View style={styles.userScore}>
+  <View style={styles.circularScoreContainer}>
+    <View style={styles.circularScoreBackground} />
+    
+    {/* Fixed circular progress using clip method */}
+    <View style={styles.circularScoreWrapper}>
+      <View style={[
+        styles.circularScoreFill,
+        { 
+          width: movieDetails.vote_average * 10 >= 50 ? '100%' : '50%',
+          height: '100%',
+          backgroundColor: movieDetails.vote_average * 10 >= 50 ? '#45ff8f' : 'transparent'
+        }
+      ]}>
+        {movieDetails.vote_average * 10 < 50 && (
+          <View style={[
+            styles.circularScoreFill,
+            { 
+              width: '100%', 
+              height: `${(movieDetails.vote_average * 10) * 2}%`,
+              backgroundColor: '#45ff8f'
+            }
+          ]} />
+        )}
+      </View>
+    </View>
+    
+    <View style={styles.circularScoreInner}>
+      <Text style={styles.circularScoreValue}>
+        {Math.round(movieDetails.vote_average * 10)}%
+      </Text>
+    </View>
+  </View>
+  <Text style={styles.scoreLabel}>User Score</Text>
+</View>
           
           <View style={styles.credits}>
             {director && (
@@ -270,7 +306,7 @@ export const DetailsScreen: React.FC = () => {
 
   const renderRecommendedMovies = () => {
     if (!movieDetails?.recommendations?.results?.length) return null;
-
+  
     return (
       <View style={styles.recommendedSection}>
         <Text style={styles.sectionTitle}>Recommended Movies</Text>
@@ -284,16 +320,31 @@ export const DetailsScreen: React.FC = () => {
               style={styles.recommendedCard}
               onPress={() => handleRecommendedMoviePress(item.id)}
             >
-              <Image 
-                source={{ 
-                  uri: item.poster_path 
-                    ? `${API_CONFIG.IMAGE_BASE_URL}${item.poster_path}`
-                    : 'https://via.placeholder.com/120x180/cccccc/666666?text=No+Image'
-                }} 
-                style={styles.recommendedImage}
-              />
+              <View style={styles.backdropContainer}>
+                <Image 
+                  source={{ 
+                    uri: item.backdrop_path 
+                      ? `${API_CONFIG.IMAGE_BASE_URL}${item.backdrop_path}`
+                      : item.poster_path
+                        ? `${API_CONFIG.IMAGE_BASE_URL}${item.poster_path}`
+                        : 'https://via.placeholder.com/300x169/cccccc/666666?text=No+Image'
+                  }} 
+                  style={styles.recommendedBackdrop}
+                />
+                <View style={styles.backdropOverlay}>
+                  <View style={styles.ratingContainer}>
+                    <Icon name="star" size={14} color="#ffc107" />
+                    <Text style={styles.recommendedRating}>
+                      {item.vote_average * 10} %
+                    </Text>
+                  </View>
+                </View>
+              </View>
               <Text style={styles.recommendedTitle} numberOfLines={2}>
                 {item.title}
+              </Text>
+              <Text style={styles.recommendedYear}>
+                {item.release_date ? new Date(item.release_date).getFullYear() : 'TBA'}
               </Text>
             </TouchableOpacity>
           )}
@@ -302,6 +353,7 @@ export const DetailsScreen: React.FC = () => {
       </View>
     );
   };
+
 
   if (loading) {
     return (
@@ -414,16 +466,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#00B4E4',
   },
-  logoSection: {
-    alignItems: 'center',
-    paddingTop: 20,
-    paddingBottom: 16,
-    backgroundColor: 'white',
-  },
-  logo: {
-    width: 200,
-    height: 60,
-  },
   titleSection: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -432,19 +474,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#0099c2',
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
+    width: 35,
+    height: 35,
   },
   title: {
     flex: 1,
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#fff',
+    marginLeft: 100,
   },
   posterDetailsSection: {
     flexDirection: 'row',
@@ -464,8 +502,19 @@ const styles = StyleSheet.create({
   detailRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 8,
+  },
+  dateDurationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+  },
+  dotSeparator: {
+    fontSize: 16,
+    color: '#fff',
+    marginHorizontal: 8,
+    fontWeight: 'bold',
   },
   detailLabel: {
     fontSize: 14,
@@ -493,21 +542,62 @@ const styles = StyleSheet.create({
     borderRightColor: 'rgba(255, 255, 255, 0.3)',
     paddingRight: 16,
   },
-  scoreContainer: {
-    flexDirection: 'row',
+  circularScoreContainer: {
+    width: 60,
+    height: 60,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 4,
+    position: 'relative',
+    marginBottom: 8,
   },
-  scoreValue: {
-    fontSize: 20,
+  circularScoreBackground: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+    borderWidth: 3,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  circularScoreWrapper: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    borderRadius: 30,
+    overflow: 'hidden',
+  },
+  circularScoreFill: {
+    position: 'absolute',
+    borderRadius: 30,
+  },
+  circularScoreInner: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#00B4E4',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  circularScoreValue: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#fff',
-    marginLeft: 4,
   },
   scoreLabel: {
     fontSize: 12,
     color: 'rgba(255, 255, 255, 0.8)',
     fontWeight: '500',
+  },
+  circularScoreHalf: {
+    position: 'absolute',
+    width: '50%',
+    height: '100%',
+    overflow: 'hidden',
+  },
+  circularScoreLeft: {
+    left: 0,
+  },
+  circularScoreRight: {
+    right: 0,
   },
   credits: {
     flex: 2,
@@ -624,20 +714,48 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   recommendedCard: {
-    width: 120,
-    marginRight: 12,
+    width: 280,
+    marginRight: 16,
   },
-  recommendedImage: {
-    width: 120,
-    height: 180,
-    borderRadius: 8,
+  backdropContainer: {
+    position: 'relative',
     marginBottom: 8,
   },
-  recommendedTitle: {
+  recommendedBackdrop: {
+    width: '100%',
+    height: 157, // 16:9 aspect ratio (280 / 1.78 = 157)
+    borderRadius: 8,
+    backgroundColor: '#f0f0f0',
+  },
+  backdropOverlay: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  recommendedRating: {
     fontSize: 12,
+    color: '#fff',
     fontWeight: '600',
+    marginLeft: 4,
+  },
+  recommendedTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
     color: '#1a1a1a',
-    textAlign: 'center',
-    lineHeight: 14,
+    marginBottom: 4,
+    lineHeight: 18,
+  },
+  recommendedYear: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
 });

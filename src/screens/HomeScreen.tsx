@@ -22,6 +22,7 @@ import { ErrorMessage } from '../components/common/ErrorMessage';
 import { CATEGORIES, SORT_OPTIONS } from '../utils/constants';
 import { Movie } from '../context/types';
 import { HomeStackParamList } from '../../App';
+import { HeaderWithLogo } from '../components/common/HeaderWithLogo';
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
 
@@ -145,15 +146,7 @@ export const HomeScreen: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      {/* Logo Section */}
-      <View style={styles.logoSection}>
-        <Image 
-          source={require('../assets/Logo.png')} 
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-
+      <HeaderWithLogo />
       {/* Now Playing Dropdown */}
       <View style={styles.filterSection}>
         <Dropdown
@@ -194,7 +187,7 @@ export const HomeScreen: React.FC = () => {
       </View>
 
       {/* Search Button - Below search field, same width */}
-      <View style={styles.searchButtonSection}>
+      <View>
         <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
           <Text style={styles.searchButtonText}>Search</Text>
         </TouchableOpacity>
@@ -205,30 +198,15 @@ export const HomeScreen: React.FC = () => {
         <Text style={styles.resultsText}>
           {isSearching 
             ? `Search results for "${searchQuery}"`
-            : `${CATEGORIES.find(cat => cat.value === category)?.label} Movies`
+            : ``
           }
         </Text>
-        <Text style={styles.resultsCount}>{getSortedMovies().length} movies</Text>
         {localSearchQuery ? (
           <TouchableOpacity onPress={handleClearSearch}>
             <Text style={styles.clearText}>Clear</Text>
           </TouchableOpacity>
         ) : null}
       </View>
-
-      {/* Pagination Info */}
-      {getSortedMovies().length > 0 && (
-        <View style={styles.paginationInfo}>
-          <Text style={styles.paginationText}>
-            Page {currentPage} of {totalPages}
-          </Text>
-          {hasMore && (
-            <Text style={styles.moreAvailableText}>
-              • More movies available
-            </Text>
-          )}
-        </View>
-      )}
     </View>
   );
 
@@ -305,14 +283,6 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingBottom: 16,
   },
-  logoSection: {
-    alignItems: 'center',
-    marginBottom: 30,
-  },
-  logo: {
-    width: 200,
-    height: 60,
-  },
   filterSection: {
     marginBottom: 16,
   },
@@ -328,9 +298,6 @@ const styles = StyleSheet.create({
     height: 42,
     fontSize: 16,
     color: '#333',
-  },
-  searchButtonSection: {
-    marginBottom: 20,
   },
   searchButton: {
     backgroundColor: '#F5F5F5',
@@ -349,8 +316,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
-    paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: '#f0f0f0',
   },
@@ -396,7 +361,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   loadMoreButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#00b4e4',
     paddingVertical: 16,
     paddingHorizontal: 20,
     borderRadius: 8,

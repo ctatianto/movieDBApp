@@ -20,6 +20,7 @@ import { useApp } from '../context/AppContext';
 import { Movie } from '../context/types';
 import { Dropdown } from '../components/common/Dropdown';
 import { API_CONFIG } from '../utils/constants';
+import { HeaderWithLogo } from '../components/common/HeaderWithLogo';
 
 // Define the composite navigation prop type
 type WatchlistScreenNavigationProp = CompositeNavigationProp<
@@ -155,7 +156,12 @@ export const WatchlistScreen: React.FC = () => {
           style={styles.removeButton}
           onPress={() => handleRemoveFromWatchlist(item)}
         >
-          <X size={20} color="#dc3545" />
+          <Image 
+          source={require('../assets/DeleteButton.png')} 
+          style={styles.removeButton}
+          resizeMode="contain"
+        />
+
         </TouchableOpacity>
       </TouchableOpacity>
     );
@@ -163,39 +169,37 @@ export const WatchlistScreen: React.FC = () => {
 
   const renderHeader = () => (
     <View style={styles.header}>
-      {/* Back Button and Title */}
-      <View style={styles.topBar}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleGoBack}
-        >
-          <ChevronLeft size={24} color="#333" />
-        </TouchableOpacity>
-        <View style={styles.logoSection}>
-        <Image 
-          source={require('../assets/Logo.png')} 
-          style={styles.logo}
-          resizeMode="contain"
-        />
-      </View>
-        <View style={styles.placeholder} />
-      </View>
-
+      <HeaderWithLogo />
       {/* User Profile Section */}
       <View style={styles.userSection}>
-        <View style={styles.avatar}>
-          <User size={24} color="#666" />
-        </View>
-        <View style={styles.userInfo}>
-          <Text style={styles.username}>{userData.username}</Text>
-          <View style={styles.joinDate}>
-            <Calendar size={14} color="#666" />
-            <Text style={styles.joinDateText}>
-              Joined {formatJoinDate(userData.joinedDate)}
-            </Text>
-          </View>
-        </View>
+  <View style={styles.backButtonRow}>
+    <TouchableOpacity 
+      style={styles.avatarBackButton}
+      onPress={handleGoBack}
+    >
+       <Image 
+          source={require('../assets/BackButton.png')} 
+          style={styles.avatarBackButton}
+          resizeMode="contain"
+        />
+    </TouchableOpacity>
+  </View>
+  
+  {/* Avatar and User Info Row */}
+  <View style={styles.userInfoRow}>
+    <View style={styles.avatar}>
+      <User size={24} color="#666" />
+    </View>
+    <View style={styles.userInfo}>
+      <Text style={styles.username}>{userData.username}</Text>
+      <View style={styles.joinDate}>
+        <Text style={styles.joinDateText}>
+          Member since {formatJoinDate(userData.joinedDate)}
+        </Text>
       </View>
+    </View>
+  </View>
+</View>
 
       {/* Stats and Filter Section */}
       <View style={styles.statsFilterSection}>
@@ -212,7 +216,6 @@ export const WatchlistScreen: React.FC = () => {
             style={styles.filterButton}
             onPress={() => setShowFilterDropdown(!showFilterDropdown)}
           >
-            <Filter size={18} color="#666" />
             <Text style={styles.filterButtonText}>Filter by</Text>
           </TouchableOpacity>
 
@@ -234,9 +237,17 @@ export const WatchlistScreen: React.FC = () => {
                   onPress={toggleSortOrder}
                 >
                   {sortOrder === 'asc' ? (
-                    <ArrowUp size={20} color="#666" />
+                    <Image 
+                    source={require('../assets/AscArrow.png')} 
+                    style={styles.sortingButton}
+                    resizeMode="contain"
+                  />
                   ) : (
-                    <ArrowDown size={20} color="#666" />
+                    <Image 
+          source={require('../assets/DescArrow.png')} 
+          style={styles.sortingButton}
+          resizeMode="contain"
+        />
                   )}
                   <Text style={styles.sortOrderText}>
                     {sortOrder === 'asc' ? 'Ascending' : 'Descending'}
@@ -310,15 +321,6 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     paddingBottom: 20,
   },
-  logoSection: {
-    alignItems: 'center',
-    marginBottom: 16,
-    paddingTop: 8,
-  },
-  logo: {
-    width: 120, // Adjust based on your logo dimensions
-    height: 40, // Adjust based on your logo dimensions
-  },
   header: {
     backgroundColor: 'white',
     paddingHorizontal: 16,
@@ -326,12 +328,6 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: '#e9ecef',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
   },
   backButton: {
     width: 40,
@@ -346,20 +342,29 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1a1a1a',
   },
-  placeholder: {
-    width: 40,
-  },
   userSection: {
-    flexDirection: 'row',
-    backgroundColor:'#042541',
-    alignItems: 'center',
+    backgroundColor: '#042541',
     marginBottom: 20,
-    padding:20,
+    padding: 20,
+    paddingBottom:40,
+  },
+  backButtonRow: {
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  avatarBackButton: {
+    marginLeft:-10,
+    width: 35,
+    height: 35,
+  },
+  userInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     backgroundColor: '#e9ecef',
     justifyContent: 'center',
     alignItems: 'center',
@@ -464,10 +469,14 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   closeFilterButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#00b4e4',
     paddingVertical: 10,
     borderRadius: 6,
     alignItems: 'center',
+  },
+  sortingButton: {
+    width: 16,
+    height: 16,
   },
   closeFilterText: {
     color: 'white',
@@ -537,13 +546,8 @@ const styles = StyleSheet.create({
     borderRadius: 4,
   },
   removeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#f8f9fa',
-    justifyContent: 'center',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    width: 22,
+    height: 22,
   },
   emptyState: {
     flex: 1,
